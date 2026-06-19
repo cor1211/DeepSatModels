@@ -1,5 +1,9 @@
 MODEL:
   architecture:  "TSViT"
+  # legacy_reshape: True/False
+  # Set to True (default) to load legacy checkpoints with original spatial layout.
+  # Set to False for new training runs with correct 2D spatial reconstruction.
+  legacy_reshape: True
   img_res: 48
   max_seq_len: 16  #
   num_channels: 14
