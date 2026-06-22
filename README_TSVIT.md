@@ -7,10 +7,8 @@ presented at CVPR 2023.
 
 To begin model training or evaluation, adjust the `.yaml` configuration files as necessary to specify the save directory or to load a pre-trained model from available checkpoints.
 
-> [!IMPORTANT]
-> **Spatial Reconstruction & Backward Compatibility (`legacy_reshape`)**
-> *   To load the official pre-trained checkpoints, ensure `legacy_reshape: True` is set in your configuration file under the `MODEL` section (this is the default).
-> *   For new training runs with correct 2D spatial reconstruction, set `legacy_reshape: False` in your configuration file.
+> [!NOTE]
+> The spatial reconstruction step at the end of the dense/segmentation forward pass has been corrected using `einops.rearrange` to faithfully map flattened patch embeddings back to their 2D positions.
 
 ### Semantic Segmentation
 

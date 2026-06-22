@@ -32,7 +32,6 @@ class STViT(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -84,16 +83,9 @@ class STViT(nn.Module):
         x = self.mlp_head(x)
         x = x.reshape(B, self.num_patches_1d**2, self.patch_size**2, self.num_classes)
         
-        if self.legacy_reshape:
-            # ORIGINAL LOGIC: Kept for backward compatibility with older checkpoints.
-            x = x.reshape(B, H*W, self.num_classes)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            # CORRECT LOGIC: True 2D spatial reconstruction
-            x = rearrange(x, 'b (h1 w1) (p1 p2) c -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b (h1 w1) (p1 p2) c -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -103,7 +95,6 @@ class TSViT_single_token(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -170,14 +161,9 @@ class TSViT_single_token(nn.Module):
         x = self.mlp_head(x)
         x = x.reshape(B, self.num_patches_1d**2, self.patch_size**2, self.num_classes)
         
-        if self.legacy_reshape:
-            x = x.reshape(B, H*W, self.num_classes)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b (h1 w1) (p1 p2) c -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b (h1 w1) (p1 p2) c -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -187,7 +173,6 @@ class TSViT_static_position_encodings(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -247,14 +232,9 @@ class TSViT_static_position_encodings(nn.Module):
         x = self.mlp_head(x.reshape(-1, self.dim))
         x = x.reshape(B, self.num_classes, self.num_patches_1d**2, self.patch_size**2)
         
-        if self.legacy_reshape:
-            x = x.permute(0, 2, 3, 1)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -264,7 +244,6 @@ class TSViT_global_attention_spatial_encoder(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -322,14 +301,9 @@ class TSViT_global_attention_spatial_encoder(nn.Module):
         x = self.mlp_head(x.reshape(-1, self.dim))
         x = x.reshape(B, self.num_classes, self.num_patches_1d**2, self.patch_size**2)
         
-        if self.legacy_reshape:
-            x = x.permute(0, 2, 3, 1)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -339,7 +313,6 @@ class TViT(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -391,14 +364,9 @@ class TViT(nn.Module):
         x = self.mlp_head(x.reshape(-1, self.dim))
         x = x.reshape(B, self.num_classes, self.num_patches_1d**2, self.patch_size**2)
         
-        if self.legacy_reshape:
-            x = x.permute(0, 2, 3, 1)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -410,7 +378,6 @@ class TSViT(nn.Module):
     """
     def __init__(self, model_config):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         self.image_size = model_config['img_res']
         self.patch_size = model_config['patch_size']
         self.num_patches_1d = self.image_size//self.patch_size
@@ -475,14 +442,9 @@ class TSViT(nn.Module):
         x = self.mlp_head(x.reshape(-1, self.dim))
         x = x.reshape(B, self.num_classes, self.num_patches_1d**2, self.patch_size**2)
         
-        if self.legacy_reshape:
-            x = x.permute(0, 2, 3, 1)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
 
@@ -494,7 +456,6 @@ class TSViT_lookup(nn.Module):
     """
     def __init__(self, model_config, train_dates):
         super().__init__()
-        self.legacy_reshape = model_config.get('legacy_reshape', True)
         train_dates = sorted(train_dates)
         self.train_dates = torch.nn.Parameter(data=torch.tensor(train_dates), requires_grad=False)#.cuda()
         self.eval_dates = torch.nn.Parameter(data=torch.arange(1, 366), requires_grad=False)
@@ -565,14 +526,9 @@ class TSViT_lookup(nn.Module):
         x = self.mlp_head(x.reshape(-1, self.dim))
         x = x.reshape(B, self.num_classes, self.num_patches_1d**2, self.patch_size**2)
         
-        if self.legacy_reshape:
-            x = x.permute(0, 2, 3, 1)
-            x = x.reshape(B, H, W, self.num_classes)
-            x = x.permute(0, 3, 1, 2)
-        else:
-            x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
-                          h1=self.num_patches_1d, w1=self.num_patches_1d, 
-                          p1=self.patch_size, p2=self.patch_size)
+        x = rearrange(x, 'b c (h1 w1) (p1 p2) -> b c (h1 p1) (w1 p2)', 
+                      h1=self.num_patches_1d, w1=self.num_patches_1d, 
+                      p1=self.patch_size, p2=self.patch_size)
         return x
 
     def update_inference_temporal_position_embeddings(self):
